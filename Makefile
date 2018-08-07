@@ -1,104 +1,106 @@
-# Put your project's name right here
-# This will generate an execitive file whose name $(PROJECT_NAME)
-PROJ_NAME = main
+NAME = main # Your project's name
 
-CC = g++
+# Select language 
+# LANG = c
+LANG = cpp
 
-# Directory of object libraries
-LIB_OBJ_DIR = lib/build
+# General flags
+CXXFLAGS = -O2 -Wall -DNDEBUG -I$(IPATH)
+CXX =
+ifeq ($(LANG),c)
+	CXX = gcc
+	CXXFLAGS +=
+else 
+	ifeq ($(LANG),cpp)
+		CXX = g++
+		CXXFLAGS += -std=c++11
+	endif
+endif
 
-# Directory of library source file
-LIB_SRC_DIR = lib/src
-
-# Directory of header used for library source file
-LIB_INC_DIR = lib/inc
-
-# General flags for CPP compiler
-CPP_FLAGS = -O2 -Wall -DNDEBUG -I$(LIB_INC_DIR) $(EXTRA_OPTIONS) 
-
-# Flags for generate object library
-LIB_FLAGS = -c 
-
-# Flags for debugging
-DEBUG_FLAGS = -g -Wall -I$(LIB_INC_DIR)
-
-# Flag for output executive file
-OUTPUT_FLAGS = -o
+# [WARNING] Be careful with space in Makefile 
+# Path for object library
+OPATH = lib/build
+# Path for library source file
+SPATH = lib/src
+# Path for library header files 
+IPATH = lib/inc
 
 # Get all source files in /lib/src and its subdirectories 
-SOURCE_LIBS = $(wildcard $(LIB_SRC_DIR)/**/*.cpp $(LIB_SRC_DIR)/*.cpp)
+SOURCE_LIBS = $(wildcard $(SPATH)/**/*.$(LANG) $(SPATH)/*.$(LANG))
 
 # Get all header files in lib/inc and its subdirectories
-HEADER_LIBS = $(wildcard $(LIB_INC_DIR)/**/*.hpp $(LIB_INC_DIR)/*.hpp)
+HEADER_LIBS = $(wildcard $(IPATH)/**/*.h $(IPATH)/*.h)
 
-# Get all object files by substituting .cpp by .o
-# More info: See "patsubst in Makefile"
-OBJ_LIBS = $(patsubst $(LIB_SRC_DIR)/%.cpp, $(LIB_OBJ_DIR)/%.o, $(SOURCE_LIBS))
+# Get all object files by substituting .cpp/.c by .o
+# More info: Google "patsubst in Makefile"
+OBJ_LIBS = $(patsubst $(SPATH)/%.$(LANG), $(OPATH)/%.o, $(SOURCE_LIBS))
 
+# Necessary files and directories for project
+FILES = LICENSE README.md
+DIRS = bin lib $(OPATH) $(SPATH) $(IPATH) src
 
-# All necessary files and directories for project
-WORKING_FILES = LICENSE README.md
-WORKING_DIRS = bin lib $(LIB_OBJ_DIR) $(LIB_SRC_DIR) $(LIB_INC_DIR) src test
+all: $(OBJ_LIBS) $(NAME)
 
-MAKEFILE_TEST_LINK = \
-	https://raw.githubusercontent.com/harrynguyen97/CppSkeleton-/master/test_skeleton/Makefile
-
-all: $(OBJ_LIBS) $(PROJ_NAME)
+# Compile object files
+class: $(OBJ_LIBS)
 
 # Compile object libraries 
-$(OBJ_LIBS): $(SOURCE_LIBS) $(HEADER_LIBS)
+$(OBJ_LIBS): CXXFLAGS += -c # flag for compiling object libraries
+$(OBJ_LIBS): $(SOURCE_LIBS) $(HEADER_LIBS) 
 	@echo Building object libraries...
-	@$(CC) $(CPP_FLAGS) $(LIB_FLAGS) $(SOURCE_LIBS)
+	@$(CXX) $(CXXFLAGS) $(SOURCE_LIBS)
 
-	@# Move *.o to lib/build because g++ can not generate multiple .o file
-	@# into a designated directory
-	@mv *.o -v $(LIB_OBJ_DIR)
-
+	@# Move *.o to lib/build 
+	@# [EXPLAIN] g++ can not generate multiple files into a specified directory
+	@mv *.o -v $(OPATH)
 	@echo Finished.
 
-# Compile executive file from src/main.cpp whose name $(PROJECT_NAME)
-$(PROJ_NAME): $(SOURCE_LIBS) $(HEADER_LIBS) 
-	@echo Building executive files...
-	@$(CC) $(CPP_FLAGS) src/main.cpp $(OBJ_LIBS) $(OUTPUT_FLAGS) $@
+# Compile executive file from src named $(NAME)
+$(NAME): $(SOURCE_LIBS) $(HEADER_LIBS) src/main.$(LANG)
+	@echo Building executive file...
+	@$(CXX) $(CXXFLAGS) src/main.$(LANG) $(OBJ_LIBS) -o $@
 	@echo Finished.
 
 # Make necessary directories and file
+.PHONY: configure
 configure:
-	@echo Creating working files and directories...
-	@mkdir -p $(WORKING_DIRS)
-	@touch $(WORKING_FILES)
+	@echo Creating neccessary files and directories...
+	@mkdir -p $(DIRS)
+	@touch $(FILES)
 	@echo Finished.
 
-	@# Download Makefile for Unit Testing from Github
-	@$(RM) test/Makefile
-	@echo Download necessary files...
-	@wget -P test/ $(MAKEFILE_TEST_LINK)
+	@# [TODO] It seems like speeding Catch Unite Testing does not work properly, 
+	@# it requires C++11, even though I turn flag -std=c++11 on.
 
+	@# Uncomment these lines for configuring unit testing
+	@# Download Makefile for Unit Testing from Github
+	@#$(RM) test/Makefile
+	@#echo Download necessary files...
+	@#wget -P test/ $(MAKEFILE_TEST_LINK)
 	@# Make the Makefile in test for unit testing
 	@# make -C <dir> <option> is for changing the directory for multiple make
-	@make -C test configure 
-	
-	@echo Finished
+	@#make -C test configure 
+	@#echo Finished
 
 # For debugging purpose.
+.PHONY: debug
+debug: CXXFLAGS += -g # flag for debuging
 debug: 
 	@echo Create debuging file...
-
 	@# Generate a.out
-	@$(CC) $(DEBUG_FLAGS) src/main.cpp $(OBJ_LIBS) 
+	@$(CXX) $(CXXFLAGS) src/main.$(LANG) $(OBJ_LIBS) 
 	
-	@# Move a.out to bin/ because g++ does not provide any way to
-	@# generate a.out file into a specific directory
+	@# Move a.out to bin/ 
+	@# [EXPLAIN] g++ can not generate miltiple files to a specified directory.
 	@mv a.out bin/
-
 	@echo Finished.
-	@echo Debugging mode.
-	
-	@# Debug
+
+	@echo Entering debugging mode.
 	@gdb bin/a.out 
 
 .PHONY: clean
-clean: 
-	@echo Cleaning following files: [$(OBJ_LIBS) $(PROJ_NAME)]...
-	@$(RM) -rf $(OBJ_LIBS) $(PROJ_NAME)
+clean: EXEC_FILES = $(shell find -type f -executable) # Find executable files
+clean:
+	@echo Cleaning following files: [$(OBJ_LIBS) $(EXEC_FILES)]...
+	@$(RM) $(OBJ_LIBS) $(EXEC_FILES)
 	@echo Finished.

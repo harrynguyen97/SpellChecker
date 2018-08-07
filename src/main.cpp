@@ -1,6 +1,8 @@
 #include "main.hpp"
 
-int main()
+// [TODO] Error handling
+// I'm gonna pass dictionary path to main some time
+int main(int argc, char* argv[])
 {
 	// HashTable contains English words
 	unordered_map<string, int> engDictHashTable;
@@ -14,7 +16,7 @@ int main()
 	// Path to dictionary file
 	// [WARNING] If there are any changes to this path, 
 	//           remember to change it in unit test .cpp file too
-	string path_to_file = "bin/words.txt";
+	string path_to_file = argv[1];
 	
 	string sentence;
 
