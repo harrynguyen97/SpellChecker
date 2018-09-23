@@ -27,7 +27,7 @@ OBJECTS := $(patsubst src/%.cpp, build/%.o, $(SOURCES))
 DEPS := $(OBJECTS:.o=.d)
 
 # Executable file name
-BIN = main
+BIN = spell-checker
 
 # Necessary files and directories for project
 FILES = LICENSE README.md
