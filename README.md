@@ -1,14 +1,30 @@
-# SpellChecker #
-This is a simple spelling checker for leaning Hash using C++
+# spell-checker v1.0
 
-* **Feature:**
-	* Check the whole sentence.
-	* Check insertion, detetion, alteration and transposition
+This is a simple spell checker I wrote for leaning Hash using C++
 
-* **Usage:** 
-	* `cd` to the directory and type `make NAME=your_project_name`
-	* `./you_project_name path_to_dictionary`
-	* Start checking typo
+## Features
+  * Check the whole sentence.
+  * Check insertion, detetion, alteration and transposition.
+
+## Installation
+Clone this repository and make:
+```
+git clone https://github.com/ngharry/spell-checker
+cd spell-checker
+make
+```
+
+## Usage
+```
+./spell-checker data/words.txt
+```
+
+where `data/words.txt` is the path to dictionary file. You can specify another.
+
+## Bugs Reporting
+
+## TODO
+
 
  
 
